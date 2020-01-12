@@ -1,0 +1,84 @@
+﻿<Window x:Class="Auto_VTP.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Auto_VTP"
+        mc:Ignorable="d"
+        Title="Auto ViettelPay - Dang Thanh Tuan v5.2 15:08 5/1/2020" Height="600" Width="480">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="4*"></RowDefinition>
+                <RowDefinition Height="3*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBox x:Name="txbCopy" Width="100" Margin="5"></TextBox>
+                    <Button x:Name="btnCopy" Width="50" Margin="5" Click="Copy_Click">Copy</Button>
+                </DockPanel>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <StackPanel VerticalAlignment="Center">
+                    <Label x:Name="Status" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Green" FontSize="15"></Label>
+                    <Label x:Name="Error" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" FontSize="15" Visibility="Hidden"></Label>
+                    <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Label Width="100" Margin="5">Số lượt hiện có</Label>
+                        <TextBox x:Name="remainTurns" Width="100" Height="20" Margin="5" TextAlignment="Center"></TextBox>
+                    </DockPanel>
+                    <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Label Width="100" Margin="5">Số lượt cần thêm</Label>
+                        <TextBox x:Name="Count" Text="0" TextAlignment="Center" Height="20" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBox>
+                    </DockPanel>
+                    <Button x:Name="Start" Click="Start_ClickAsync" Margin="0 10" Height="30" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center">Start</Button>
+
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="Note" Visibility="Hidden" TextWrapping="Wrap" TextAlignment="Center">Lưu ý: Thời gian start giữa các máy nên cách nhau 10s. Khuyên dùng Auto Start!!!</TextBlock>
+                    <Button x:Name="StartDevice1" Click="StartDevice1_Click" Margin="0 10" Height="30" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden">Start device 1</Button>
+                    <Button x:Name="StartDevice2" Click="StartDevice2_Click" Margin="0 10" Height="30" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden">Start device 2</Button>
+                    <Button x:Name="StartDevice3" Click="StartDevice3_Click" Margin="0 10" Height="30" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Hidden">Start device 3</Button>
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <ListView Name="lvLogStatus">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Log" Width="240" DisplayMemberBinding="{Binding Status}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <ListView Name="lvLogError">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Error" Width="240" DisplayMemberBinding="{Binding Status}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

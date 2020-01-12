@@ -1,0 +1,17 @@
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\bin\Debug\Auto_VTP.exe.config
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\bin\Debug\Auto_VTP.exe
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\bin\Debug\Auto_VTP.pdb
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\bin\Debug\Emgu.CV.World.dll
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.csprojAssemblyReference.cache
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\MainWindow.g.cs
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\App.g.cs
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP_MarkupCompile.cache
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP_MarkupCompile.lref
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\MainWindow.baml
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.g.resources
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.Properties.Resources.resources
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.csproj.GenerateResource.cache
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.csproj.CoreCompileInputs.cache
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.csproj.CopyComplete
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.exe
+C:\Users\Acer\source\repos\Auto_VTP\Auto_VTP\obj\Debug\Auto_VTP.pdb
