@@ -27,18 +27,16 @@ namespace Auto_VTP
         ObservableCollection<Log> logs = new ObservableCollection<Log>();
         ObservableCollection<Log> errors = new ObservableCollection<Log>();
 
-        bool[] isRunning = new bool[3];
+        bool isRunning = false;
+        bool fullDetail = false;
+        int loop = 0;
         int count = 0;
-        int sum = 0;
         List<string> devices = null;
+        string[] lines = null;
 
-        Bitmap newRequest1 = (Bitmap)Bitmap.FromFile("new.png");
-        Bitmap newRequest2 = (Bitmap)Bitmap.FromFile("new.png");
-        Bitmap newRequest3 = (Bitmap)Bitmap.FromFile("new.png");
+        Bitmap success = (Bitmap)Bitmap.FromFile("success.png");
+        Bitmap detail = (Bitmap)Bitmap.FromFile("detail.png");
 
-        Bitmap close1 = (Bitmap)Bitmap.FromFile("close.png");
-        Bitmap close2 = (Bitmap)Bitmap.FromFile("close.png");
-        Bitmap close3 = (Bitmap)Bitmap.FromFile("close.png");
 
         public MainWindow()
         {
@@ -46,12 +44,11 @@ namespace Auto_VTP
 
             InitializeComponent();
 
-            isRunning[0] = false;
-            isRunning[1] = false;
-            isRunning[2] = false;
-
             lvLogStatus.ItemsSource = logs;
             lvLogError.ItemsSource = errors;
+
+            lines = File.ReadAllLines("data.txt");
+            TotalTurns.Badge = int.Parse(lines[0]);
 
             if (devices.Count == 0)
             {
@@ -60,520 +57,272 @@ namespace Auto_VTP
             }
             else
             {
-                Status.Content = devices.Count + " device Connected!";
+                Status.Content = devices.Count + " thiết bị đã kết nối!";
             }
         }
 
-        private async void Start_ClickAsync(object sender, RoutedEventArgs e)
+        private void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (Start.Content.ToString() == "Start")
+            if (isRunning == false)
             {
-                sum = int.Parse(Count.Text);
-
-                if (remainTurns.Text == "")
+                if (Turn.Text == "0")
                 {
                     Error.Visibility = Visibility.Visible;
-                    Error.Content = "Chưa nhập số lượt hiện có";
+                    Error.Content = "Số lần muốn chạy không hợp lệ";
                     return;
                 }
 
-                if (sum < 1)
-                {
-                    Error.Visibility = Visibility.Visible;
-                    Error.Content = "Số lượt lắc phải lớn hơn 0";
-                    return;
-                }
+                isRunning = true;
+
+                loop = int.Parse(Loop.Text);
 
                 Error.Visibility = Visibility.Hidden;
                 Error.Content = "";
-                Note.Visibility = Visibility.Visible;
 
-                if (devices.Count >= 1)
-                {
-                    StartDevice1.Visibility = Visibility.Visible;
-                }
+                Status.Content = "Đang chạy...";
+                Reset.IsEnabled = true;
 
-                if (devices.Count >= 2)
-                {
-                    StartDevice2.Visibility = Visibility.Visible;
-                }
-
-                if (devices.Count >= 3)
-                {
-                    StartDevice3.Visibility = Visibility.Visible;
-                }
-
-                Status.Content = "Running!";
-
-                Start.Content = "Stop All";
+                Start.Content = "Dừng lại";
                 if (logs.Count == 0)
                 {
-                    logs.Add(new Log() { Status = "Đã nhận 0/" + sum + " lượt lắc" });
+                    logs.Add(new Log() { Status = "Đã nhận 0/" + loop * 3 + " lượt lắc" });
                 }
+
+                Auto(devices[0]);
             }
             else
             {
-                Start.Content = "Start";
-                Status.Content = "Ready!";
+                Start.Content = "Bắt đầu";
+                Status.Content = "Sẵn sàng...";
+                Reset.IsEnabled = true;
 
-                StartDevice1.Visibility = Visibility.Hidden;
-                StartDevice2.Visibility = Visibility.Hidden;
-                StartDevice3.Visibility = Visibility.Hidden;
-                Note.Visibility = Visibility.Hidden;
+                isRunning = false;
 
-                isRunning[0] = false;
-                isRunning[1] = false;
-                isRunning[2] = false;
-
-                StartDevice1.Content = "Start device 1";
-                StartDevice2.Content = "Start device 2";
-                StartDevice3.Content = "Start device 3";
-
-
-                logs.Add(new Log() { Status = "Đã ngừng tất cả" });
+                logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy" });
             }
         }
 
-        private void StartDevice1_Click(object sender, RoutedEventArgs e)
+        private void Reset_Click(object sender, RoutedEventArgs e)
         {
-            StartDevice(0, sender);
-        }
-
-        private void StartDevice2_Click(object sender, RoutedEventArgs e)
-        {
-            StartDevice(1, sender);
-        }
-
-        private void StartDevice3_Click(object sender, RoutedEventArgs e)
-        {
-            StartDevice(2, sender);
-        }
-
-        private void StartDevice(int index, object sender)
-        {
-            if (((Button)sender).Content.ToString() == ("Start device " + (index + 1)))
+            if (isRunning == false)
             {
-                if (count < sum)
-                {
-                    isRunning[index] = true;
-                    ((Button)sender).Content = "Stop device " + (index + 1);
-                    logs.Add(new Log() { Status = DateTime.Now.ToString("HH:mm:ss tt ") + "Đang chạy máy " + (index + 1) });
-                    //Auto(devices[index]);
-                }
-                else
-                {
-                    Error.Content = "Số lượt lắc đã vượt quá giới hạn";
-                }
-            }
-            else
-            {
-                isRunning[index] = false;
-                logs.Add(new Log() { Status = "Ngừng chạy máy " + (index + 1) });
-                ((Button)sender).Content = "Start device " + (index + 1);
-            }
-        }
+                count = 0;
+                logs.Clear();
+                errors.Clear();
 
-        private string GetRandomAlphaNumeric(int n)
-        {
-            string s = "";
-            Random random = new Random();
-            // Any random integer   
-            for (int i = 0; i < n; i++)
-            {
-                int num = random.Next(10);
-                s += num;
+                Start.Content = "Bắt đầu";
+                Error.Visibility = Visibility.Hidden;
+                Error.Content = "";
+                Status.Content = "Sẵn sàng...";
             }
-            return s;
         }
 
         async void Auto(string deviceID)
         {
             await Task.Run(() =>
             {
-                int indexDevice = 0;
-                string nameDevice = "";
-
-                if (deviceID == devices[0])
+                if (count >= loop)
                 {
-                    indexDevice = 0;
-                    nameDevice = "Máy 1";
-                }
-                else if (deviceID == devices[1])
-                {
-                    indexDevice = 1;
-                    nameDevice = "Máy 2";
-                }
-                else if (deviceID == devices[2])
-                {
-                    indexDevice = 2;
-                    nameDevice = "Máy 3";
-                }
-
-                if (count > sum)
-                {
+                    isRunning = false;
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        Start.Content = "Bắt đầu";
+                        Error.Visibility = Visibility.Visible;
+                        Error.Content = "Đã hoàn tất";
+                        Status.Content = "Sẵn sàng...";
+                    });
                     return;
                 }
 
-                if (isRunning[indexDevice])
+                if (isRunning)
                 {
-                    var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
-                    Bitmap nq = null;
-
-                    if (deviceID == devices[0])
-                    {
-                        nq = newRequest1;
-                    }
-                    else if (deviceID == devices[1])
-                    {
-                        nq = newRequest2;
-                    }
-                    else if (deviceID == devices[2])
-                    {
-                        nq = newRequest3;
-                    }
-
-                    if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, nq) != null)
-                    {
-                        KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 87.9);
-                    }
-                    else
-                    {
-                        KAutoHelper.ADBHelper.TapByPercent(deviceID, 6.2, 13.9);
-                    }
-
-                    Delay(500, isRunning[indexDevice]);
+                    this.Dispatcher.Invoke(() =>
+                       {
+                           if (fullDetail)
+                           {
+                               logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click mở camera" });
+                           }
+                       });
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 15.7, 16.3); // mo camera
                 }
 
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 5.8, 32.3);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.InputText(deviceID, "20000");
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 15.0, 58.7);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    if (deviceID == devices[0])
-                    {
-                        KAutoHelper.ADBHelper.InputText(deviceID, "0338" + GetRandomAlphaNumeric(6));
-                    }
-                    else if (deviceID == devices[1])
-                    {
-                        KAutoHelper.ADBHelper.InputText(deviceID, "0397" + GetRandomAlphaNumeric(6));
-                    }
-                    else if (deviceID == devices[2])
-                    {
-                        KAutoHelper.ADBHelper.InputText(deviceID, "0352" + GetRandomAlphaNumeric(6));
-                    }
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 5.1, 58.1);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.3, 92.7);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 5.1, 13.7);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.InputText(deviceID, count.ToString());
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.6, 93.3);
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 47.8, 79.2); // nhap pass "2"
-                    Delay(1, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 47.8, 79.2); // nhap pass "2"
-                    Delay(1, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 47.8, 79.2); // nhap pass "2"
-                    Delay(1, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 85.1); // nhap pass "5"
-                    Delay(1, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 85.1); // nhap pass "5"
-                    Delay(1, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 85.1); // nhap pass "5"
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
+                if (isRunning)
                 {
                     int step = 0;
-                    while (step < 30 && isRunning[indexDevice])
+                    while (step < 100 && isRunning == true)
                     {
+                        var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
+
+                        if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, detail) != null)
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                if (fullDetail)
+                                {
+                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click textbox nhập tiền" });
+                                }
+                            });
+                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 8.3, 33.9);// click textbox nhap so tien
+                            Delay(1000);
+                            break;
+                        }
+                        else
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                if (fullDetail)
+                                {
+                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
+                                }
+                            });
+                        }
                         step++;
-
-                        var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
-                        if (deviceID == devices[0])
-                        {
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close1) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                                break;
-                            }
-                        }
-                        else if (deviceID == devices[1])
-                        {
-
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close2) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                                break;
-                            }
-                        }
-                        else if (deviceID == devices[2])
-                        {
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close3) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                                break;
-                            }
-                        }
-
-                        Delay(100, isRunning[indexDevice]);
                     }
-
-                    if (step == 30) // đụng độ
-                    {
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            errors.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss tt ") + nameDevice + " đụng độ. Tự động fix" });
-                        });
-
-                        if (isRunning[indexDevice])
-                        {
-                            KAutoHelper.ADBHelper.Key(deviceID, ADBKeyEvent.KEYCODE_APP_SWITCH); // thoát app
-                            Delay(2000, isRunning[indexDevice]);
-                        }
-
-                        if (isRunning[indexDevice])
-                        {
-                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 51.7, 41.1); // mở lại app
-                            Delay(3000, isRunning[indexDevice]);
-                        }
-
-                        var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
-                        if (deviceID == devices[0])
-                        {
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close1) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                            }
-                            else
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 13.6, 46.8);
-                                }
-                            }
-                        }
-                        else if (deviceID == devices[1])
-                        {
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close2) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                            }
-                            else
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 13.6, 46.8);
-                                }
-                            }
-                        }
-                        else if (deviceID == devices[2])
-                        {
-                            if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, close3) != null)
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.2, 56.7); // click đóng
-                                }
-                            }
-                            else
-                            {
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                                    Delay(1000, isRunning[indexDevice]);
-                                }
-                                if (isRunning[indexDevice])
-                                {
-                                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 13.6, 46.8);
-                                }
-                            }
-                        }
-                    }
-
-                    Delay(1000, isRunning[indexDevice]);
                 }
 
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 46.4, 28.0); // click mở 1 item
-                    Delay(1000, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 67.6, 34.1); // click 3 chấm
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 46.8, 94.9); // cập nhật trạng thái
-                    Delay(500, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 24.2, 79.0); // da thanh toan
-                    Delay(1000, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.3, 93.3); // xac nhan
-                    Delay(3000, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
-                {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 4.1, 7.1); // tro ve
-                    Delay(2000, isRunning[indexDevice]);
-                }
-
-                if (isRunning[indexDevice])
+                if (isRunning)
                 {
                     this.Dispatcher.Invoke(() =>
                     {
-                        logs.Add(new Log() { Status = "+3 luot lac" });
-                        count += 3;
-                        int countLog = 0;
-                        for (int i = 0; i < logs.Count; i++)
+                        if (fullDetail)
                         {
-                            if (logs[i].Status == "+3 luot lac")
-                            {
-                                countLog += 3;
-                            }
+                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập tiền" });
                         }
-                        logs[0] = new Log() { Status = DateTime.Now.ToString("HH:mm:ss tt ") + "Đã nhận " + countLog + "/" + sum + " lượt lắc" };
+                    });
+                    KAutoHelper.ADBHelper.InputText(deviceID, "1"); // nhập số tiền
+                    Delay(1000);
+                }
+
+            Fail:
+                if (isRunning)
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        if (fullDetail)
+                        {
+                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click thanh toán" });
+                        }
+                    });
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.6, 55.6); // click "thanh toán"
+                    Delay(1000);
+                }
+
+                if (isRunning)
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        if (fullDetail)
+                        {
+                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click xác nhận" });
+                        }
+                    });
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.5, 94.0); // click xác nhận
+                    Delay(1000);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        if (fullDetail)
+                        {
+                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập password" });
+                        }
                     });
                 }
 
-                if (isRunning[indexDevice])
+                if (isRunning)
                 {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                }
+
+                if (isRunning)
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                }
+
+                if (isRunning)
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                }
+
+                if (isRunning)
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                }
+
+                if (isRunning)
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                }
+
+                if (isRunning)
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                }
+
+                if (isRunning)
+                {
+                    int step = 0;
+                    while (step < 100 && isRunning == true)
+                    {
+                        var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
+
+                        if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, success) != null)
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                if (fullDetail)
+                                {
+                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click trở về trang chủ" });
+                                }
+                            });
+                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.3, 78.7); // click "ve man hinh trang chu"
+                            break;
+                        }
+                        else
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                if (fullDetail)
+                                {
+                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
+                                }
+                            });
+                        }
+                        step++;
+                    }
+
+                    if (step == 100)
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            if (fullDetail)
+                            {
+                                logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
+                            }
+                        });
+
+                        KAutoHelper.ADBHelper.TapByPercent(deviceID, 77.5, 62.5); //click "ok"
+                        Delay(500);
+
+                        goto Fail;
+                    }
+                }
+
+                if (isRunning)
+                {
+                    count++;
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        CurrentTurns.Badge = int.Parse(CurrentTurns.Badge.ToString()) + 3;
+                        TotalTurns.Badge = int.Parse(TotalTurns.Badge.ToString()) + 3;
+                        lines[1] = TotalTurns.Badge.ToString();
+                        File.WriteAllLines("data.txt", lines);
+                    });
+                    logs[0].Status = "Đã nhận" + count * 3 + "/" + loop * 3 + " lượt lắc";
                     Auto(deviceID);
                 }
             });
         }
 
-        void Delay(int delay, bool isRunning)
+        void Delay(int delay)
         {
             while (delay > 0)
             {
@@ -586,10 +335,59 @@ namespace Auto_VTP
             }
         }
 
-        private void Copy_Click(object sender, RoutedEventArgs e)
+        private void Loop_TextChanged(object sender, TextChangedEventArgs e)
         {
-            Clipboard.SetText(txbCopy.Text);
-            btnCopy.Content = "Copied";
+            int n = 0;
+            bool check = int.TryParse(Loop.Text, out n);
+            if (check)
+            {
+                Turn.Text = (n * 3).ToString();
+            }
+            else
+            {
+                Turn.Text = "0";
+            }
+        }
+
+        private void ToggleButton_Click1(object sender, RoutedEventArgs e)
+        {
+            fullDetail = !fullDetail;
+        }
+
+        private void ToggleButton_Click2(object sender, RoutedEventArgs e)
+        {
+            if (HistoryDetail.IsChecked == true)
+            {
+                HistoryArea.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                HistoryArea.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ToggleButton_Click3(object sender, RoutedEventArgs e)
+        {
+            if (NoteDetail.IsChecked == true)
+            {
+                NoteArea.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                NoteArea.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ToggleButton_Click4(object sender, RoutedEventArgs e)
+        {
+            if (SignatureDetail.IsChecked == true)
+            {
+                SignatureArea.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SignatureArea.Visibility = Visibility.Hidden;
+            }
         }
     }
 }
