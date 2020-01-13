@@ -83,10 +83,6 @@ namespace Auto_VTP
                 Reset.IsEnabled = true;
 
                 Start.Content = "Dừng lại";
-                if (logs.Count == 0)
-                {
-                    logs.Add(new Log() { Status = "Đã nhận 0/" + loop * 3 + " lượt lắc" });
-                }
 
                 Auto(devices[0]);
             }
@@ -98,7 +94,7 @@ namespace Auto_VTP
 
                 isRunning = false;
 
-                logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy" });
+                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy" });
             }
         }
 
@@ -140,7 +136,7 @@ namespace Auto_VTP
                        {
                            if (fullDetail)
                            {
-                               logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click mở camera" });
+                               logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click mở camera" });
                            }
                        });
                     KAutoHelper.ADBHelper.TapByPercent(deviceID, 15.7, 16.3); // mo camera
@@ -159,11 +155,10 @@ namespace Auto_VTP
                             {
                                 if (fullDetail)
                                 {
-                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click textbox nhập tiền" });
+                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click textbox nhập tiền" });
                                 }
                             });
                             KAutoHelper.ADBHelper.TapByPercent(deviceID, 8.3, 33.9);// click textbox nhap so tien
-                            Delay(1000);
                             break;
                         }
                         else
@@ -172,7 +167,7 @@ namespace Auto_VTP
                             {
                                 if (fullDetail)
                                 {
-                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
+                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
                                 }
                             });
                         }
@@ -186,11 +181,10 @@ namespace Auto_VTP
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập tiền" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập tiền" });
                         }
                     });
                     KAutoHelper.ADBHelper.InputText(deviceID, "1"); // nhập số tiền
-                    Delay(1000);
                 }
 
             Fail:
@@ -200,11 +194,11 @@ namespace Auto_VTP
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click thanh toán" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click thanh toán" });
                         }
                     });
                     KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.6, 55.6); // click "thanh toán"
-                    Delay(1000);
+                    Delay(500);
                 }
 
                 if (isRunning)
@@ -213,16 +207,16 @@ namespace Auto_VTP
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click xác nhận" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click xác nhận" });
                         }
                     });
                     KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.5, 94.0); // click xác nhận
-                    Delay(1000);
+                    Delay(500);
                     this.Dispatcher.Invoke(() =>
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập password" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập password" });
                         }
                     });
                 }
@@ -260,7 +254,7 @@ namespace Auto_VTP
                 if (isRunning)
                 {
                     int step = 0;
-                    while (step < 100 && isRunning == true)
+                    while (step < 30 && isRunning == true)
                     {
                         var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
 
@@ -270,7 +264,7 @@ namespace Auto_VTP
                             {
                                 if (fullDetail)
                                 {
-                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click trở về trang chủ" });
+                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click trở về trang chủ" });
                                 }
                             });
                             KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.3, 78.7); // click "ve man hinh trang chu"
@@ -282,21 +276,18 @@ namespace Auto_VTP
                             {
                                 if (fullDetail)
                                 {
-                                    logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
+                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
                                 }
                             });
                         }
                         step++;
                     }
 
-                    if (step == 100)
+                    if (step == 30)
                     {
                         this.Dispatcher.Invoke(() =>
                         {
-                            if (fullDetail)
-                            {
-                                logs.Insert(1, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
-                            }
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#sai otp hoặc từ chối thanh toán" });
                         });
 
                         KAutoHelper.ADBHelper.TapByPercent(deviceID, 77.5, 62.5); //click "ok"
@@ -313,10 +304,9 @@ namespace Auto_VTP
                     {
                         CurrentTurns.Badge = int.Parse(CurrentTurns.Badge.ToString()) + 3;
                         TotalTurns.Badge = int.Parse(TotalTurns.Badge.ToString()) + 3;
-                        lines[1] = TotalTurns.Badge.ToString();
+                        lines[0] = TotalTurns.Badge.ToString();
                         File.WriteAllLines("data.txt", lines);
                     });
-                    logs[0].Status = "Đã nhận" + count * 3 + "/" + loop * 3 + " lượt lắc";
                     Auto(deviceID);
                 }
             });

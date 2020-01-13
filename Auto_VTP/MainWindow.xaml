@@ -9,7 +9,7 @@
         WindowStartupLocation="Manual" 
         Left="0" Top="5"
         Icon="vtp.ico"
-        Title="Hỗ trợ thanh toán ViettelPay - v6.2.5 23:21 12/01/2020" Height="700" Width="564">
+        Title="Hỗ trợ thanh toán ViettelPay - v6.2.6 23:21 12/01/2020" Height="700" Width="564">
     <Grid Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"></ColumnDefinition>
