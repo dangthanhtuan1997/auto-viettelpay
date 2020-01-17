@@ -25,17 +25,19 @@ namespace Auto_VTP
     public partial class MainWindow : Window
     {
         ObservableCollection<Log> logs = new ObservableCollection<Log>();
-        ObservableCollection<Log> errors = new ObservableCollection<Log>();
 
-        bool isRunning = false;
+        bool[] isRunning = { false, false };
         bool fullDetail = false;
+        bool block = false;
         int loop = 0;
         int count = 0;
+        int limitWaittingTime = 50;
         List<string> devices = null;
         string[] lines = null;
 
         Bitmap success = (Bitmap)Bitmap.FromFile("success.png");
-        Bitmap detail = (Bitmap)Bitmap.FromFile("detail.png");
+        Bitmap pay = (Bitmap)Bitmap.FromFile("pay.png");
+        Bitmap ok = (Bitmap)Bitmap.FromFile("ok.png");
 
 
         public MainWindow()
@@ -45,7 +47,6 @@ namespace Auto_VTP
             InitializeComponent();
 
             lvLogStatus.ItemsSource = logs;
-            lvLogError.ItemsSource = errors;
 
             lines = File.ReadAllLines("data.txt");
             TotalTurns.Badge = int.Parse(lines[0]);
@@ -63,262 +64,304 @@ namespace Auto_VTP
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (isRunning == false)
+            if (Turn.Text == "0")
             {
-                if (Turn.Text == "0")
-                {
-                    Error.Visibility = Visibility.Visible;
-                    Error.Content = "Số lần muốn chạy không hợp lệ";
-                    return;
-                }
+                Error.Content = "Số lần muốn chạy không hợp lệ!";
+                return;
+            }
 
-                isRunning = true;
+            if (SDTQR.IsChecked == false)
+            {
+                Error.Content = "Chưa cập nhật SĐT QR!";
+                return;
+            }
 
-                loop = int.Parse(Loop.Text);
+            if (QRCODE.IsChecked == false)
+            {
+                Error.Content = "Chưa cập nhật hình ảnh QR code!";
+                return;
+            }
 
-                Error.Visibility = Visibility.Hidden;
-                Error.Content = "";
+            if (TurnRemaining.IsChecked == false)
+            {
+                Error.Content = "Chưa kiểm tra lượt hiện có!";
+                return;
+            }
 
-                Status.Content = "Đang chạy...";
-                Reset.IsEnabled = true;
+            if (Balance.IsChecked == false)
+            {
+                Error.Content = "Chưa kiểm tra số dư hiện có!";
+                return;
+            }
 
-                Start.Content = "Dừng lại";
+            loop = int.Parse(Loop.Text);
 
-                Auto(devices[0]);
+            Error.Content = "";
+
+            Start.Visibility = Visibility.Collapsed;
+            StartDevice1.Visibility = Visibility.Visible;
+            StartDevice2.Visibility = Visibility.Visible;
+
+            //Auto(devices[0]);
+
+            //logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy" });
+        }
+
+        private void StartDevice1_Click(object sender, RoutedEventArgs e)
+        {
+            if (isRunning[0] == false)
+            {
+                isRunning[0] = true;
+                StartDevice1.Content = "Dừng máy 1";
+
+                Auto(devices[0], 0);
+
+                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Bắt đầu chạy máy 1" });
             }
             else
             {
-                Start.Content = "Bắt đầu";
-                Status.Content = "Sẵn sàng...";
-                Reset.IsEnabled = true;
+                isRunning[0] = false;
+                StartDevice1.Content = "Chạy máy 1";
 
-                isRunning = false;
+                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy máy 1" });
+            }
+        }
 
-                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy" });
+        private void StartDevice2_Click(object sender, RoutedEventArgs e)
+        {
+            if (isRunning[1] == false)
+            {
+                isRunning[1] = true;
+                StartDevice2.Content = "Dừng máy 2";
+
+                Auto(devices[1], 1);
+
+                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Bắt đầu chạy máy 2" });
+            }
+            else
+            {
+                isRunning[1] = false;
+                StartDevice2.Content = "Chạy máy 2";
+
+                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "Ngừng chạy máy 2" });
             }
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
-            if (isRunning == false)
+            if (isRunning[0] == true || isRunning[1] == true)
             {
-                count = 0;
-                logs.Clear();
-                errors.Clear();
+                Error.Content = "Phải ngừng tất cả các máy trước khi reset!";
 
-                Start.Content = "Bắt đầu";
-                Error.Visibility = Visibility.Hidden;
-                Error.Content = "";
-                Status.Content = "Sẵn sàng...";
+                return;
             }
+            count = 0;
+            CurrentTurns.Badge = 0;
+            block = false;
+            logs.Clear();
+            SDTQR.IsChecked = false;
+            QRCODE.IsChecked = false;
+            TurnRemaining.IsChecked = false;
+            Balance.IsChecked = false;
+
+            Error.Content = "";
+            Status.Content = devices.Count + " thiết bị đã kết nối!";
+            Error.Content = "Reset thành công!";
+
+            Start.Visibility = Visibility.Visible;
+            StartDevice1.Visibility = Visibility.Collapsed;
+            StartDevice2.Visibility = Visibility.Collapsed;
+
+            StartDevice1.Content = "Chạy máy 1";
+            StartDevice2.Content = "Chạy máy 2";
         }
 
-        async void Auto(string deviceID)
+        async void Auto(string deviceID, int index)
         {
             await Task.Run(() =>
             {
                 if (count >= loop)
                 {
-                    isRunning = false;
+                    isRunning[0] = false;
+                    isRunning[1] = false;
                     this.Dispatcher.Invoke(() =>
                     {
-                        Start.Content = "Bắt đầu";
-                        Error.Visibility = Visibility.Visible;
                         Error.Content = "Đã hoàn tất";
-                        Status.Content = "Sẵn sàng...";
                     });
                     return;
                 }
 
-                if (isRunning)
+            Loop:
+                if (count >= loop)
                 {
+                    isRunning[0] = false;
+                    isRunning[1] = false;
                     this.Dispatcher.Invoke(() =>
-                       {
-                           if (fullDetail)
-                           {
-                               logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click mở camera" });
-                           }
-                       });
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 15.7, 16.3); // mo camera
-                }
-
-                if (isRunning)
-                {
-                    int step = 0;
-                    while (step < 100 && isRunning == true)
                     {
-                        var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
-
-                        if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, detail) != null)
-                        {
-                            this.Dispatcher.Invoke(() =>
-                            {
-                                if (fullDetail)
-                                {
-                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click textbox nhập tiền" });
-                                }
-                            });
-                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 8.3, 33.9);// click textbox nhap so tien
-                            break;
-                        }
-                        else
-                        {
-                            this.Dispatcher.Invoke(() =>
-                            {
-                                if (fullDetail)
-                                {
-                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
-                                }
-                            });
-                        }
-                        step++;
-                    }
+                        Error.Content = "Đã hoàn tất";
+                    });
+                    return;
                 }
 
-                if (isRunning)
+                if (isRunning[index])
+                {
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 8.0, 31.9);// click textbox nhap so tien
+                }
+
+                if (isRunning[index])
                 {
                     this.Dispatcher.Invoke(() =>
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập tiền" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#Máy " + (index + 1) + " nhập tiền" });
                         }
                     });
-                    KAutoHelper.ADBHelper.InputText(deviceID, "1"); // nhập số tiền
+                    KAutoHelper.ADBHelper.InputText(deviceID, "10000"); // nhập số tiền
                 }
 
             Fail:
-                if (isRunning)
+                if (isRunning[index])
                 {
                     this.Dispatcher.Invoke(() =>
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click thanh toán" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#Máy " + (index + 1) + " click thanh toán" });
                         }
                     });
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.6, 55.6); // click "thanh toán"
-                    Delay(500);
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 51.7, 50.8); // click "thanh toán"
+                    Delay(1000, index);
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
                     this.Dispatcher.Invoke(() =>
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click xác nhận" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#Máy " + (index + 1) + " click xác nhận" });
                         }
                     });
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.5, 94.0); // click xác nhận
-                    Delay(500);
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.3, 94.1); // click xác nhận
+                    Delay(500, index);
                     this.Dispatcher.Invoke(() =>
                     {
                         if (fullDetail)
                         {
-                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#nhập password" });
+                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#Máy " + (index + 1) + " nhập password" });
                         }
                     });
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.0, 79.0); // nhap pass "2"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.0, 79.0); // nhap pass "2"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.9, 72.1); // nhap pass "2"
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.0, 79.0); // nhap pass "2"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.6, 84.9); // nhap pass "5"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.6, 84.9); // nhap pass "5"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
-                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 50.7, 79.7); // nhap pass "5"
+                    while (block == true)
+                    {
+                        Delay(200, index);
+                    }
+                    block = true;
+                    Delay(500, index);
+                    KAutoHelper.ADBHelper.TapByPercent(deviceID, 48.6, 84.9); // nhap pass "5"
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
                     int step = 0;
-                    while (step < 30 && isRunning == true)
+                    while (isRunning[index] == true)
                     {
                         var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
+                        var s = KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, success);
+                        var o = KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, ok);
 
-                        if (KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, success) != null)
+                        if (s != null)
                         {
                             this.Dispatcher.Invoke(() =>
                             {
-                                if (fullDetail)
-                                {
-                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#click trở về trang chủ" });
-                                }
+                                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "- Thành công - máy " + (index + 1) });
                             });
-                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 49.3, 78.7); // click "ve man hinh trang chu"
+                            KAutoHelper.ADBHelper.TapByPercent(deviceID, 5.1, 6.5); // click trở về
+                            block = false;
+
                             break;
                         }
-                        else
+
+                        if (o != null)
                         {
                             this.Dispatcher.Invoke(() =>
                             {
-                                if (fullDetail)
-                                {
-                                    logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#kiểm tra lần " + step + " thất bại" });
-                                }
+                                TotalFailTurns.Badge = int.Parse(TotalFailTurns.Badge.ToString()) + 1;
+                                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "- Thất bại - máy " + (index + 1) });
                             });
-                        }
-                        step++;
-                    }
 
-                    if (step == 30)
-                    {
+                            KAutoHelper.ADBHelper.Tap(deviceID, o.Value.X, o.Value.Y);
+                            //KAutoHelper.ADBHelper.TapByPercent(deviceID, 76.8, 60.3); //click "ok"
+                            Delay(500, index);
+                            block = false;
+
+                            goto Fail;
+                        }
+
                         this.Dispatcher.Invoke(() =>
                         {
-                            logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#sai otp hoặc từ chối thanh toán" });
+                            if (fullDetail)
+                            {
+                                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "#Máy " + (index + 1) + " kiểm tra lần " + step + " thất bại" });
+                            }
                         });
 
-                        KAutoHelper.ADBHelper.TapByPercent(deviceID, 77.5, 62.5); //click "ok"
-                        Delay(500);
-
-                        goto Fail;
+                        step++;
                     }
                 }
 
-                if (isRunning)
+                if (isRunning[index])
                 {
                     count++;
                     this.Dispatcher.Invoke(() =>
                     {
                         CurrentTurns.Badge = int.Parse(CurrentTurns.Badge.ToString()) + 3;
                         TotalTurns.Badge = int.Parse(TotalTurns.Badge.ToString()) + 3;
+                        TotalSuccessTurns.Badge = int.Parse(TotalSuccessTurns.Badge.ToString()) + 1;
                         lines[0] = TotalTurns.Badge.ToString();
                         File.WriteAllLines("data.txt", lines);
                     });
-                    Auto(deviceID);
+                    goto Loop;
                 }
             });
         }
 
-        void Delay(int delay)
+        void Delay(int delay, int index)
         {
             while (delay > 0)
             {
                 Thread.Sleep(TimeSpan.FromMilliseconds(1));
                 delay--;
-                if (!isRunning)
+                if (!isRunning[index])
                 {
                     break;
                 }
@@ -344,40 +387,11 @@ namespace Auto_VTP
             fullDetail = !fullDetail;
         }
 
-        private void ToggleButton_Click2(object sender, RoutedEventArgs e)
+        private void CurrentTurn_Click(object sender, RoutedEventArgs e)
         {
-            if (HistoryDetail.IsChecked == true)
-            {
-                HistoryArea.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                HistoryArea.Visibility = Visibility.Hidden;
-            }
-        }
-
-        private void ToggleButton_Click3(object sender, RoutedEventArgs e)
-        {
-            if (NoteDetail.IsChecked == true)
-            {
-                NoteArea.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                NoteArea.Visibility = Visibility.Hidden;
-            }
-        }
-
-        private void ToggleButton_Click4(object sender, RoutedEventArgs e)
-        {
-            if (SignatureDetail.IsChecked == true)
-            {
-                SignatureArea.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                SignatureArea.Visibility = Visibility.Hidden;
-            }
+            CurrentTurns.Badge = int.Parse(CurrentTurns.Badge.ToString()) + 3;
+            TotalSuccessTurns.Badge = int.Parse(TotalSuccessTurns.Badge.ToString()) + 1;
+            count += 3;
         }
     }
 }

@@ -9,29 +9,29 @@
         WindowStartupLocation="Manual" 
         Left="0" Top="5"
         Icon="vtp.ico"
-        Title="Hỗ trợ thanh toán ViettelPay - v6.2.6 23:21 12/01/2020" Height="700" Width="564">
+        Title="Hỗ trợ thanh toán ViettelPay - v6.5.0 13:43 17/01/2020" Height="600" Width="664">
     <Grid Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"></ColumnDefinition>
-            <ColumnDefinition Width="240"></ColumnDefinition>
+            <ColumnDefinition Width="340"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="5*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="6*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
-                <DockPanel x:Name="HistoryArea" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2">
+                <DockPanel x:Name="HistoryArea" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2">
                     <materialDesign:Badged x:Name="TotalTurns" Badge="31215" Margin="10" BadgeBackground="Red" Background="White">
                         <Button Background="DarkBlue">
                             Tổng lượt đã bán
                         </Button>
                     </materialDesign:Badged>
                     <materialDesign:Badged x:Name="CurrentTurns" Badge="0" Margin="10" BadgeBackground="Yellow">
-                        <Button Background="DarkBlue">
+                        <Button Click="CurrentTurn_Click" Background="DarkBlue">
                             Số lượt vừa thêm
                         </Button>
                     </materialDesign:Badged>
@@ -41,83 +41,89 @@
             <Grid Grid.Row="1">
                 <StackPanel VerticalAlignment="Center">
                     <Label x:Name="Status" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Green" FontSize="15"></Label>
-                    <Label x:Name="Error" FontWeight="Bold" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" FontSize="15" Visibility="Hidden"></Label>
+                    <Label x:Name="Error" FontWeight="Bold" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" FontSize="15"></Label>
                     <DockPanel VerticalAlignment="Center">
-                        <Label Width="150" FontWeight="Bold" Margin="5">Số lần muốn chạy</Label>
+                        <Label Width="150" FontWeight="Bold" Margin="5 10">Số lần muốn chạy</Label>
                         <TextBox TextChanged="Loop_TextChanged" x:Name="Loop" Width="100" Height="22" Margin="5" TextAlignment="Center"></TextBox>
                     </DockPanel>
                     <DockPanel VerticalAlignment="Center">
-                        <Label Width="150" FontWeight="Bold" Margin="5">Số lượt sẽ thêm</Label>
+                        <Label Width="150" FontWeight="Bold" Margin="5 0 5 20">Số lượt sẽ thêm</Label>
                         <TextBox IsEnabled="False" x:Name="Turn" Text="0" TextAlignment="Center" Height="22" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBox>
                     </DockPanel>
-                    <Button Background="DarkBlue" x:Name="Start" Click="Start_Click" Margin="0 10" Height="40" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" IsDefault="True">Bắt đầu</Button>
-                    <Button Background="DarkBlue" x:Name="Reset" Click="Reset_Click" Margin="0 10" Height="40" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False">Reset</Button>
+                    <DockPanel HorizontalAlignment="Center">
+                        <Button Background="DarkBlue" x:Name="Start" Click="Start_Click" Margin="10 0" Height="40" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center" IsDefault="True">Bắt đầu</Button>
+                        <Button Background="DarkBlue" x:Name="StartDevice1" Visibility="Collapsed" Click="StartDevice1_Click" Margin="10 0" Height="40" Width="130" VerticalAlignment="Center" HorizontalAlignment="Center" IsDefault="True">Chạy máy 1</Button>
+                        <Button Background="DarkBlue" x:Name="StartDevice2" Visibility="Collapsed" Click="StartDevice2_Click" Margin="10 0" Height="40" Width="130" VerticalAlignment="Center" HorizontalAlignment="Center" IsDefault="True">Chạy máy 2</Button>
+                    </DockPanel>
+                    <Button Background="DarkBlue" x:Name="Reset" Click="Reset_Click" Margin="0 10" Height="40" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center">Reset</Button>
                     <DockPanel>
-                        <Label Width="150" FontWeight="Bold">Hiển thị log chi tiết</Label>
-                        <ToggleButton x:Name="FullDetail" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                        <Label Width="180" FontWeight="Bold">Đã cập nhập SĐT QR</Label>
+                        <ToggleButton x:Name="SDTQR" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                         ToolTip="MaterialDesignSwitchAccentToggleButton"
-                        IsChecked="False" Click="ToggleButton_Click1" />
+                        IsChecked="False" />
                     </DockPanel>
                     <DockPanel>
-                        <Label Width="150" FontWeight="Bold">Hiển thị lịch sử giao dịch</Label>
-                        <ToggleButton x:Name="HistoryDetail" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                        <Label Width="180" FontWeight="Bold">Đã cập nhập hình ảnh QR</Label>
+                        <ToggleButton x:Name="QRCODE" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                         ToolTip="MaterialDesignSwitchAccentToggleButton"
-                        IsChecked="False" Click="ToggleButton_Click2" />
+                        IsChecked="False" />
                     </DockPanel>
                     <DockPanel>
-                        <Label Width="150" FontWeight="Bold">Hiển thị lưu ý</Label>
-                        <ToggleButton x:Name="NoteDetail" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                        <Label Width="180" FontWeight="Bold">Đã kiểm tra lượt lắc hiện có</Label>
+                        <ToggleButton x:Name="TurnRemaining" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                         ToolTip="MaterialDesignSwitchAccentToggleButton"
-                        IsChecked="False" Click="ToggleButton_Click3" />
+                        IsChecked="False"/>
                     </DockPanel>
                     <DockPanel>
-                        <Label Width="150" FontWeight="Bold">Hiển thị thông tin tác giả</Label>
-                        <ToggleButton x:Name="SignatureDetail" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                        <Label Width="180" FontWeight="Bold">Đã kiểm tra số dư hiện có</Label>
+                        <ToggleButton x:Name="Balance" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                         ToolTip="MaterialDesignSwitchAccentToggleButton"
-                        IsChecked="False" Click="ToggleButton_Click4" />
+                        IsChecked="False"/>
+                    </DockPanel>
+                    <DockPanel>
+                        <Label Width="180" FontWeight="Bold">Xem chi tiết log</Label>
+                        <ToggleButton x:Name="FullDetail" Click="ToggleButton_Click1" Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                        ToolTip="MaterialDesignSwitchAccentToggleButton"
+                        IsChecked="False"/>
                     </DockPanel>
                 </StackPanel>
             </Grid>
 
             <Grid Grid.Row="2">
-                <StackPanel x:Name="NoteArea" Visibility="Hidden">
-                    <Label Foreground="Red" HorizontalContentAlignment="Center">Lưu ý: cập nhật tài khoản người nhận trước mỗi giao dịch</Label>
-                </StackPanel>
-                <StackPanel x:Name="SignatureArea" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                    <Label HorizontalContentAlignment="Center" FontWeight="Bold">Tool được viết bởi Admin Đặng Thanh Tuấn</Label>
-                    <Label HorizontalContentAlignment="Center">Quản trị viên nhóm</Label>
-                    <Label HorizontalContentAlignment="Center" FontWeight="Bold">Lắc mana ViettelPay - Lì xì chéo - Trao đổi mảnh ghép</Label>
-                    <Label HorizontalContentAlignment="Center" FontWeight="Bold">Lắc xì momo 2020 - Lì xì chéo momo</Label>
-                </StackPanel>
+
             </Grid>
         </Grid>
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="9*"></RowDefinition>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
-                <ListView Name="lvLogStatus">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Log" Width="240" DisplayMemberBinding="{Binding Status}" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2">
+                    <materialDesign:Badged x:Name="TotalSuccessTurns" Badge="0" Margin="10" BadgeBackground="Red" Background="White">
+                        <Button Background="DarkBlue" Width="120">
+                            Thành công
+                        </Button>
+                    </materialDesign:Badged>
+                    <materialDesign:Badged x:Name="TotalFailTurns" Badge="0" Margin="10" BadgeBackground="Yellow">
+                        <Button Background="DarkBlue" Width="120">
+                            Thất bại
+                        </Button>
+                    </materialDesign:Badged>
+                </DockPanel>
             </Grid>
 
             <Grid Grid.Row="1">
-                <ListView Name="lvLogError">
+                <ListView Name="lvLogStatus">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Errors" Width="240" DisplayMemberBinding="{Binding Status}" />
+                            <GridViewColumn Header="Logs" Width="340" DisplayMemberBinding="{Binding Status}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
             </Grid>
-
         </Grid>
     </Grid>
 </Window>
