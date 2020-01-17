@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using KAutoHelper;
 
 namespace Auto_VTP
@@ -31,9 +32,9 @@ namespace Auto_VTP
         bool block = false;
         int loop = 0;
         int count = 0;
-        int limitWaittingTime = 50;
         List<string> devices = null;
         string[] lines = null;
+        DateTime startTime = DateTime.Now;
 
         Bitmap success = (Bitmap)Bitmap.FromFile("success.png");
         Bitmap pay = (Bitmap)Bitmap.FromFile("pay.png");
@@ -51,6 +52,13 @@ namespace Auto_VTP
             lines = File.ReadAllLines("data.txt");
             TotalTurns.Badge = int.Parse(lines[0]);
 
+            DispatcherTimer dtClockTime = new DispatcherTimer();
+
+            dtClockTime.Interval = new TimeSpan(0, 0, 1); //in Hour, Minutes, Second.
+            dtClockTime.Tick += dtClockTime_Tick;
+
+            dtClockTime.Start();
+
             if (devices.Count == 0)
             {
                 MessageBox.Show("Not found any instance!");
@@ -60,6 +68,12 @@ namespace Auto_VTP
             {
                 Status.Content = devices.Count + " thiết bị đã kết nối!";
             }
+        }
+
+        private void dtClockTime_Tick(object sender, EventArgs e)
+        {
+            TimeSpan t = DateTime.Now - startTime;
+            Timer.Content = t.ToString(@"hh\:mm\:ss");
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
@@ -392,6 +406,12 @@ namespace Auto_VTP
             CurrentTurns.Badge = int.Parse(CurrentTurns.Badge.ToString()) + 3;
             TotalSuccessTurns.Badge = int.Parse(TotalSuccessTurns.Badge.ToString()) + 1;
             count += 3;
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(txbCopy.Text);
+            btnCopy.Content = "Copied";
         }
     }
 }

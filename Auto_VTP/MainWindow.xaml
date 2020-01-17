@@ -9,21 +9,16 @@
         WindowStartupLocation="Manual" 
         Left="0" Top="5"
         Icon="vtp.ico"
-        Title="Hỗ trợ thanh toán ViettelPay - v6.5.0 13:43 17/01/2020" Height="600" Width="664">
+        Title="Hỗ trợ thanh toán ViettelPay - v6.5.1 20:31 17/01/2020" Height="700" Width="664">
+    
     <Grid Background="LightGray">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"></ColumnDefinition>
-            <ColumnDefinition Width="340"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
 
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="6*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="0">
+        <Grid Grid.Row="0">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <DockPanel x:Name="HistoryArea" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2">
                     <materialDesign:Badged x:Name="TotalTurns" Badge="31215" Margin="10" BadgeBackground="Red" Background="White">
                         <Button Background="DarkBlue">
@@ -35,11 +30,33 @@
                             Số lượt vừa thêm
                         </Button>
                     </materialDesign:Badged>
+                    <materialDesign:Badged x:Name="TotalSuccessTurns" Badge="0" Margin="10" BadgeBackground="Red" Background="White">
+                        <Button Background="DarkBlue" Width="120">
+                            Thành công
+                        </Button>
+                    </materialDesign:Badged>
+                    <materialDesign:Badged x:Name="TotalFailTurns" Badge="0" Margin="10" BadgeBackground="Yellow">
+                        <Button Background="DarkBlue" Width="120">
+                            Thất bại
+                        </Button>
+                    </materialDesign:Badged>
                 </DockPanel>
-            </Grid>
+            </StackPanel>
+        </Grid>
 
-            <Grid Grid.Row="1">
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition Width="340"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
                 <StackPanel VerticalAlignment="Center">
+                    <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBox x:Name="txbCopy" Width="100" Height="22" Margin="10 0"></TextBox>
+                        <Button x:Name="btnCopy" Click="Copy_Click" Background="DarkBlue" FontSize="10" Width="60" Height="30" Margin="10 0">Copy</Button>
+                    </DockPanel>
+                    <Label x:Name="Timer" Width="140" Height="46" Padding="0" FontSize="35" FontWeight="Bold" Margin="0 6">00:00:00</Label>
                     <Label x:Name="Status" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Green" FontSize="15"></Label>
                     <Label x:Name="Error" FontWeight="Bold" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Red" FontSize="15"></Label>
                     <DockPanel VerticalAlignment="Center">
@@ -89,33 +106,7 @@
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="2">
-
-            </Grid>
-        </Grid>
-
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="9*"></RowDefinition>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="0">
-                <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2">
-                    <materialDesign:Badged x:Name="TotalSuccessTurns" Badge="0" Margin="10" BadgeBackground="Red" Background="White">
-                        <Button Background="DarkBlue" Width="120">
-                            Thành công
-                        </Button>
-                    </materialDesign:Badged>
-                    <materialDesign:Badged x:Name="TotalFailTurns" Badge="0" Margin="10" BadgeBackground="Yellow">
-                        <Button Background="DarkBlue" Width="120">
-                            Thất bại
-                        </Button>
-                    </materialDesign:Badged>
-                </DockPanel>
-            </Grid>
-
-            <Grid Grid.Row="1">
+            <Grid Grid.Column="1">
                 <ListView Name="lvLogStatus">
                     <ListView.View>
                         <GridView>
