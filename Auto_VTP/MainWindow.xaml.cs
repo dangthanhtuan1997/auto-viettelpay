@@ -312,6 +312,7 @@ namespace Auto_VTP
                         var screen = KAutoHelper.ADBHelper.ScreenShoot(deviceID);
                         var s = KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, success);
                         var o = KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, ok);
+                        var p = KAutoHelper.ImageScanOpenCV.FindOutPoint(screen, pay);
 
                         if (s != null)
                         {
@@ -335,6 +336,20 @@ namespace Auto_VTP
 
                             KAutoHelper.ADBHelper.Tap(deviceID, o.Value.X, o.Value.Y);
                             //KAutoHelper.ADBHelper.TapByPercent(deviceID, 76.8, 60.3); //click "ok"
+                            Delay(500, index);
+                            block = false;
+
+                            goto Fail;
+                        }
+
+                        if (p != null)
+                        {
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                TotalFailTurns.Badge = int.Parse(TotalFailTurns.Badge.ToString()) + 1;
+                                logs.Insert(0, new Log() { Status = DateTime.Now.ToString("HH:mm:ss ") + "- Thất bại - máy " + (index + 1) });
+                            });
+
                             Delay(500, index);
                             block = false;
 
